@@ -1,18 +1,45 @@
 import sys
+import pandas as pd
 
 
 def load_data(messages_filepath, categories_filepath):
-    pass
+    # Read the two csv files
+    categories_df = pd.read_csv('disaster_categories.csv')
+    messages_df = pd.read_csv('disaster_messages.csv')
+    # Merge the two dataframes on id column
+    consolidated_df = pd.merge(left=categories_df, right=messages_df, how='left', left_on='id', right_on='id')
+    #print(consolidated_df.shape)
+    return consolidated_df
 
 
 def clean_data(df):
-    pass
+    #Transform data to have individual columns for the categories values
+    for row in df.iloc:
+        cats = [cat.strip().split('-') for cat in row.categories.split(';')]
+        for cat, value in cats:
+            df[cat]=int(value)
+    #Drop the categories column
+    df.drop(columns=['categories'], inplace=True)
+    #Find and delete duplicate rows in the dataframe
+    # Deduplicate the dataframe by deleting the duplicate rows
+    duplicate_index = df[df.duplicated(keep='first')].index
+    # drop these row indexes from dataFrame 
+    df.drop(duplicate_index, axis=0, inplace = True) 
+    #print(df.shape)
+    return df
 
 
 def save_data(df, database_filename):
-    pass  
-
-
+    # Load the processsed data
+    import sqlite3
+    conn = sqlite3.connect(database_filename)
+    conn.execute('CREATE TABLE IF NOT EXISTS MESSAGES ('+ str(list(df.columns)) +')')
+    conn.commit()
+    df.to_sql('MESSAGES', conn, if_exists='replace', index = False)
+    #print(pd.read_sql('SELECT count(*) FROM MESSAGES', con = conn))
+    conn.close()
+    
+    
 def main():
     if len(sys.argv) == 4:
 
