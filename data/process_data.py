@@ -4,8 +4,8 @@ import pandas as pd
 
 def load_data(messages_filepath, categories_filepath):
     # Read the two csv files
-    categories_df = pd.read_csv('disaster_categories.csv')
-    messages_df = pd.read_csv('disaster_messages.csv')
+    categories_df = pd.read_csv(categories_filepath)
+    messages_df = pd.read_csv(messages_filepath)
     # Merge the two dataframes on id column
     consolidated_df = pd.merge(left=categories_df, right=messages_df, how='left', left_on='id', right_on='id')
     #print(consolidated_df.shape)
@@ -14,10 +14,13 @@ def load_data(messages_filepath, categories_filepath):
 
 def clean_data(df):
     #Transform data to have individual columns for the categories values
-    for row in df.iloc:
-        cats = [cat.strip().split('-') for cat in row.categories.split(';')]
-        for cat, value in cats:
-            df[cat]=int(value)
+    # iterate over the dataframe row by row
+    for index_label, row_series in df.iterrows():
+        #Split the categories text into cats (category and values)
+        cats = [cat.strip().split('-') for cat in row_series.categories.split(';')]
+        # Add new columns for each cat and update the value
+        for cat in cats:
+            df.at[index_label , cat[0]] = cat[1]
     #Drop the categories column
     df.drop(columns=['categories'], inplace=True)
     #Find and delete duplicate rows in the dataframe
