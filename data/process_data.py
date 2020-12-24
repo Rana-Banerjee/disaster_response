@@ -28,6 +28,8 @@ def clean_data(df):
     duplicate_index = df[df.duplicated(keep='first')].index
     # drop these row indexes from dataFrame 
     df.drop(duplicate_index, axis=0, inplace = True) 
+    # delete any rows that are null so as to not break the code
+    df.dropna(inplace=True)
     #print(df.shape)
     return df
 
