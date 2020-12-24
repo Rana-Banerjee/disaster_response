@@ -1,16 +1,53 @@
 import sys
+from sqlalchemy import create_engine
+import pandas as pd
+import nltk
+nltk.download(['punkt', 'wordnet'])
+import re
+from nltk import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from sklearn.pipeline import Pipeline
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
 
 
 def load_data(database_filepath):
-    pass
-
+    engine = create_engine('sqlite:///'+database_filepath)
+    con = engine.connect()
+    df = pd.read_sql('select * from MESSAGES', con)
+    df.dropna(inplace=True)
+    X = df['message'] 
+    Y = df.drop(columns=['id','message','original','genre'])
+    return X, Y, Y.columns
 
 def tokenize(text):
-    pass
+    url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    detected_urls = re.findall(url_regex, text)
+    for url in detected_urls:
+        text = text.replace(url, "urlplaceholder")
+
+    tokens = word_tokenize(text)
+    lemmatizer = WordNetLemmatizer()
+
+    clean_tokens = []
+    for tok in tokens:
+        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+        clean_tokens.append(clean_tok)
+
+    return clean_tokens
 
 
 def build_model():
-    pass
+    pipeline = Pipeline([('tfidf_vect',TfidfVectorizer(tokenizer=tokenize))
+                     ,('cls', MultiOutputClassifier(RandomForestClassifier()))])
+    parameters = {
+    'cls__estimator__n_estimators': [50, 100, 200],
+    'cls__estimator__min_samples_split': [2, 3, 4]
+}
+    cv = GridSearchCV(pipeline, param_grid=parameters)
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
