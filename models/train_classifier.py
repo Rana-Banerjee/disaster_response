@@ -11,12 +11,9 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
-<<<<<<< HEAD
 from sklearn.model_selection import train_test_split
 import pickle
 from sklearn.metrics import classification_report
-=======
->>>>>>> 048859143ed373af06f5a9c0e8616c714335a63d
 
 
 def load_data(database_filepath):
@@ -48,26 +45,16 @@ def tokenize(text):
 def build_model():
     pipeline = Pipeline([('tfidf_vect',TfidfVectorizer(tokenizer=tokenize))
                      ,('cls', MultiOutputClassifier(RandomForestClassifier()))])
-<<<<<<< HEAD
-#    parameters = {
-#    'cls__estimator__n_estimators': [50, 100, 200],
-#    'cls__estimator__min_samples_split': [2, 3, 4]
-#}
     parameters = {
     'cls__estimator__n_estimators': [50],
     'cls__estimator__min_samples_split': [2]
-=======
-    parameters = {
-    'cls__estimator__n_estimators': [50, 100, 200],
-    'cls__estimator__min_samples_split': [2, 3, 4]
->>>>>>> 048859143ed373af06f5a9c0e8616c714335a63d
+
 }
     cv = GridSearchCV(pipeline, param_grid=parameters)
     return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-<<<<<<< HEAD
     accuracy=0
     precision=0
     recall = 0
@@ -89,14 +76,6 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 def save_model(model, model_filepath):
     pickle.dump(model, open(model_filepath, 'wb'))
-=======
-    pass
-
-
-def save_model(model, model_filepath):
-    pass
->>>>>>> 048859143ed373af06f5a9c0e8616c714335a63d
-
 
 def main():
     if len(sys.argv) == 3:
