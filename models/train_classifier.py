@@ -11,6 +11,9 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import train_test_split
+import pickle
+from sklearn.metrics import classification_report
 
 
 def load_data(database_filepath):
@@ -42,20 +45,40 @@ def tokenize(text):
 def build_model():
     pipeline = Pipeline([('tfidf_vect',TfidfVectorizer(tokenizer=tokenize))
                      ,('cls', MultiOutputClassifier(RandomForestClassifier()))])
+#    parameters = {
+#    'cls__estimator__n_estimators': [50, 100, 200],
+#    'cls__estimator__min_samples_split': [2, 3, 4]
+#}
     parameters = {
-    'cls__estimator__n_estimators': [50, 100, 200],
-    'cls__estimator__min_samples_split': [2, 3, 4]
+    'cls__estimator__n_estimators': [50],
+    'cls__estimator__min_samples_split': [2]
 }
     cv = GridSearchCV(pipeline, param_grid=parameters)
     return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    accuracy=0
+    precision=0
+    recall = 0
+    n1='\n'
+    y_pred = model.predict(X_test)
+    for feat in range(y_pred.shape[1]):
+        accuracy+=(y_pred[:,feat]==Y_test.iloc[:,feat]).mean()
+        cr = classification_report(y_pred[:,feat],Y_test.iloc[:,feat])
+        f1 = cr.split()[-2]
+        pr, rc = cr.split()[-4:-2]
+        precision+= float(pr)
+        recall+=float(rc)
+        print(f'Output category: {category_names[feat]}{n1}  F1: {f1}, Precision: {pr}, Recall:{rc}')
 
+    accuracy/= y_pred.shape[1]
+    precision/= y_pred.shape[1]
+    recall/= y_pred.shape[1]
+    print(f'Overall accuracy, precision, recall across all categories is {round(accuracy,4)}, {round(precision,4)}, {round(recall,4)}')
 
 def save_model(model, model_filepath):
-    pass
+    pickle.dump(model, open(model_filepath, 'wb'))
 
 
 def main():
