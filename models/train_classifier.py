@@ -17,6 +17,15 @@ from sklearn.metrics import classification_report
 
 
 def load_data(database_filepath):
+    ''''
+    This function loads the data from the SQLite database and returns the X, Y and categories
+    Inputs:
+    database_filepath: Path of the SQLite database
+    Returns:
+    X: The list of messages as a pandas series object
+    Y: The ground truth values of the categories of the messages
+    Y.columns: List of names of the categories
+    ''''
     engine = create_engine('sqlite:///'+database_filepath)
     con = engine.connect()
     df = pd.read_sql('select * from MESSAGES', con)
@@ -25,6 +34,13 @@ def load_data(database_filepath):
     return X, Y, Y.columns
 
 def tokenize(text):
+    ''''
+    This function preprocesses the messages and tokenizes them
+    Inputs:
+    text: The text string that needs to be tokenized
+    Returns:
+    clean_tokens: The list of cleaned token for the given text string
+    ''''
     url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
     detected_urls = re.findall(url_regex, text)
     for url in detected_urls:
@@ -42,6 +58,13 @@ def tokenize(text):
 
 
 def build_model():
+    ''''
+    This function builds a pipeline of transformer and estimator, performs grid search on the pipeline parameters and builds a model
+    Inputs:
+    None
+    Returns:
+    cv: The Grid search pipeline object that can be trained
+    ''''
     pipeline = Pipeline([('tfidf_vect',TfidfVectorizer(tokenizer=tokenize))
                      ,('cls', MultiOutputClassifier(RandomForestClassifier()))])
     parameters = {
@@ -54,6 +77,17 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    ''''
+    Evaluates the model and outputs the F1 score, precision, recall and accuracy for individual categories
+    Inputs:
+    model: The model that needs to be evaluated
+    X_test: The test data on which the model needs to be evaluated
+    Y_test: The ground truth values against which the model is evaluated
+    category_names: The list of names of the categories
+    Returns:
+    Prints F1, Precision and Recall for each category
+    Prints overall accuracy, precision, recall across all categories
+    ''''
     accuracy=0
     precision=0
     recall = 0
@@ -74,6 +108,14 @@ def evaluate_model(model, X_test, Y_test, category_names):
     print(f'Overall accuracy, precision, recall across all categories is {round(accuracy,4)}, {round(precision,4)}, {round(recall,4)}')
 
 def save_model(model, model_filepath):
+    ''''
+    This function saves the model to the given filepath as a pickle file
+    Input:
+    model: The model to be saved
+    model_filepath: The path to which the model needs to be saved to
+    Returns:
+    None
+    ''''
     pickle.dump(model, open(model_filepath, 'wb'))
 
 def main():
