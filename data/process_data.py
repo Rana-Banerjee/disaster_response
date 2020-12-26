@@ -3,6 +3,14 @@ import pandas as pd
 
 
 def load_data(messages_filepath, categories_filepath):
+    '''
+    This functions loads data from csv and returns a consolidated dataframe
+    Inputs:
+    messages_filepath: The path of csv which contains the messages
+    categories_filepath: The path of csv which contains the category list
+    Returns:
+    consolidated_df: The merged dataframe of the data
+    '''
     # Read the two csv files
     categories_df = pd.read_csv(categories_filepath)
     messages_df = pd.read_csv(messages_filepath)
@@ -13,6 +21,13 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    '''
+    This functions cleans the loaded data
+    Inputs:
+    df: Dataframe whose records needs to be cleaned
+    Returns:
+    df: Cleaned dataframe
+    '''
     #Transform data to have individual columns for the categories values
     # iterate over the dataframe row by row
     for index_label, row_series in df.iterrows():
@@ -29,12 +44,22 @@ def clean_data(df):
     # drop these row indexes from dataFrame 
     df.drop(duplicate_index, axis=0, inplace = True) 
     # delete any rows that are null so as to not break the code
-    df.dropna(inplace=True)
+    df = df[df['related'].notna()]
+    #Updating records with related as 2.0 to 1.0 to convert it to binary
+    df.loc[df['related']==2.0,'related']=1.0
     #print(df.shape)
     return df
 
 
 def save_data(df, database_filename):
+    '''
+    This functions saves the dataframe as a SQLite database
+    Inputs:
+    df: Dataframe to be saved
+    database_filename: The path of SQLite database to which the dataframe needs to be saved
+    Returns:
+    None
+    '''
     # Load the processsed data
     import sqlite3
     conn = sqlite3.connect(database_filename)

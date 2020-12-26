@@ -25,6 +25,23 @@ The app does the inference as follows:
 - Takes user input for a random message via the web app and predicts the classes
 - The predicted classes are highlighted and rendered in the web app
 
+### Description of files in the project:
+app
+| - template
+| |- master.html # Main page of web app
+| |- go.html # Classification result page of web app
+|- run.py # Flask file that runs app
+data
+|- disaster_categories.csv # Data to process
+|- disaster_messages.csv # Data to process
+|- process_data.py # ETL Pipeline
+|- InsertDatabaseName.db # Database to save clean data to
+|- EDA.ipynb # Jupyter notebook to explore the data
+models
+|- train_classifier.py # ML Pipeline
+|- classifier.pkl # Saved model
+|- Train_classifier.ipynb # Jupyter notebook to explore and work out the ML pipeline
+README.md # Summary of the project
 ### Instructions:
 1. Run the following commands in the project's root directory to set up your database and model.
 
