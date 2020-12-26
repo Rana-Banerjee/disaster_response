@@ -20,7 +20,6 @@ def load_data(database_filepath):
     engine = create_engine('sqlite:///'+database_filepath)
     con = engine.connect()
     df = pd.read_sql('select * from MESSAGES', con)
-    df.dropna(inplace=True)
     X = df['message'] 
     Y = df.drop(columns=['id','message','original','genre'])
     return X, Y, Y.columns
