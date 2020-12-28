@@ -42,16 +42,24 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
-    
+    cat_names=list(df.drop(columns=['id', 'message', 'original', 'genre']).columns)
+    cat_vals=[]
+    for col in cat_names:
+        val = len(df[df[col]=="1"])
+        if val > 0:
+            cat_vals.append(val)
+        else:
+            cat_names.remove(col)
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
         {
             'data': [
-                Bar(
-                    x=genre_names,
-                    y=genre_counts
-                )
+                {
+                    'x' : genre_names,
+                    'y' : [genre_counts[0],genre_counts[1],genre_counts[2]],
+                    'type':'bar'
+                }
             ],
 
             'layout': {
@@ -63,12 +71,32 @@ def index():
                     'title': "Genre"
                 }
             }
+        },
+        {
+            'data': [
+                {
+                    'x' : cat_names,
+                    'y' : cat_vals,
+                    'type':'bar'
+                }
+            ],
+
+            'layout': {
+                'title': 'Distribution of Message Categories',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Message Category"
+                }
+            }
         }
     ]
     
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
     graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
+    
     
     # render web page with plotly graphs
     return render_template('master.html', ids=ids, graphJSON=graphJSON)
